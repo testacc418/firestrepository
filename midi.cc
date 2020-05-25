@@ -7,42 +7,6 @@ typedef unsigned char byte;
 /* First define a custom wrapper over std::vector<byte>
  * so we can quickly push_back multiple bytes with a single call.
  */
-class MIDIvec: public std::vector<byte>
-{
-public:
-    // Methods for appending raw data into the vector:
-    template<typename... Args>
-    void AddBytes(byte data, Args...args)
-    {
-        push_back(data);
-        AddBytes(args...);
-    }
-    template<typename... Args>
-    void AddBytes(const char* s, Args...args)
-    {
-        insert(end(), s, s + std::strlen(s));
-        AddBytes(args...);
-    }
-    void AddBytes() { }
-};
-
-/* Define a class which encodes MIDI events into a track */
-class MIDItrack: public MIDIvec
-{
-protected:
-    unsigned delay, running_status;
-public:
-    MIDItrack()
-        : MIDIvec(), delay(0), running_status(0)
-    {
-    }
-    
-    // Methods for indicating how much time elapses:
-    void AddDelay(unsigned amount) { delay += amount; }
-    
-    void AddVarLen(unsigned t)
-    {
-        if(t >> 21) AddBytes(0x80 | ((t >> 21) & 0x7F));
         if(t >> 14) AddBytes(0x80 | ((t >> 14) & 0x7F));
         if(t >>  7) AddBytes(0x80 | ((t >>  7) & 0x7F));
         AddBytes(((t >> 0) & 0x7F));
